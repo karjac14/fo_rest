@@ -16,11 +16,7 @@ var prefRef = db.collection("user_preferences");
 // TODO: Add middleware to authenticate requests
 
 // Edamam Get APIs
-const edPath = 'https://api.edamam.com/search';
-const edParams = configs.edamamConfigs;
-
-// Edamam Get APIs
-const spoonUrl = 'https://spoonacular-recipe-food-nutrition-v1.p.rapidapi.com/recipes/searchComplex';
+const spoonUrl = configs.spoonUrl;
 const spoonHeader = configs.spoonConfigs;
 
 
@@ -71,11 +67,13 @@ app.post('/', (req, res) => {
         params: spoonData
     };
 
+    //test max totalresults of recipes
     axios.get(spoonUrl, spoonConfig)
         .then(response => {
             return response.data.totalResults;
         })
         .then(totalResults => {
+            //then save the preferences to db 
             preferences.totalResults = totalResults;
             preferences.count = count;
             prefRef.doc(uid).set(preferences)
