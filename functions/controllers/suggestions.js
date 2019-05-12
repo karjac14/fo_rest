@@ -67,7 +67,7 @@ app.get('/', (req, res) => {
                             offset, //random offset number to have different suggestions every week
                             number: suggestionsCount,
                             type: "main course",
-                            diet,
+                            diet: diet !== "No Diet" ? diet : "",
                             instructionsRequired: true,
                             addRecipeInformation: true,
                             intolerances: filtersStr
@@ -112,7 +112,7 @@ app.get('/', (req, res) => {
                             });
 
                     } else {
-                        res.status(200).json({ preferences: null });
+                        return res.status(200).json({ preferences: false });
                     }
                 }).catch((err) => {
                     return res.status(500).json({
