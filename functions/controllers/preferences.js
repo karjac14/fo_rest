@@ -18,7 +18,7 @@ const spoonHeader = configs.spoonConfigs;
 //THIS CONTROLLER HANDLES USERS RECIPE PREFERENCES
 //Methods: Get, Post
 
-app.get('/preferences/', (req, res) => {
+app.get('/', (req, res) => {
 
     var db = admin.firestore();
     var prefRef = db.collection("user_preferences");
@@ -37,7 +37,7 @@ app.get('/preferences/', (req, res) => {
 
 
 });
-app.post('/preferences/', (req, res) => {
+app.post('/', (req, res) => {
 
     let { preferences, uid } = req.body.params;
 
@@ -86,7 +86,7 @@ app.post('/preferences/', (req, res) => {
                     return res.status(200).json({ totalResults: totalResults });
 
 
-                }).catch((error) => {
+                }).catch((err) => {
                     return res.status(500).json({
                         error: err
                     })
