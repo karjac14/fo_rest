@@ -4,8 +4,6 @@ const axios = require('axios');
 const express = require('express');
 const cors = require('cors');
 const moment = require('moment');
-
-
 const configs = require('../configs.js');
 
 const app = express();
@@ -95,7 +93,7 @@ app.get('/', (req, res) => {
 
                                 suggestionsRef.doc(suggestionId).set({ suggestions: suggestions, week, year, firstDay, lastDay, offset })
                                     .then((doc) => {
-                                        return res.status(200).json({ suggestions: suggestions, week, year, firstDay, lastDay, offset, count });
+                                        return res.status(200).json({ suggestions: suggestions, week, year, firstDay, lastDay, offset, count, newWeek: true });
                                     }).catch((err) => {
                                         return res.status(500).json({
                                             error: err,
