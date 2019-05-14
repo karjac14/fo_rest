@@ -20,6 +20,8 @@ const spoonHeader = configs.spoonConfigs;
 //Methods: Get, Post
 app.get('/', (req, res) => {
 
+    console.log(req.headers);
+
 
     var db = admin.firestore();
     var prefRef = db.collection("user_preferences");
@@ -128,6 +130,30 @@ app.get('/', (req, res) => {
 });
 
 app.post('/', (req, res) => {
+
+    console.log(req.headers);
+
+    var db = admin.firestore();
+    var suggestionsRef = db.collection("user_suggestions");
+    let { uid } = req.body;
+
+    let week = req.body.week;
+    let year = req.body.year;
+
+
+    let suggestionId = `${week}-${year}-${uid}`;
+
+    suggestionsRef.doc(suggestionId).set(req.body)
+        .then((doc) => {
+            return res.status(200).json({});
+        }).catch((err) => {
+            return res.status(500).json({
+                error: err,
+                foErrorMessage: "Error saving in user_suggestions in Firebase"
+            });
+        });
+
+
 
 });
 

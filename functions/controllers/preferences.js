@@ -39,7 +39,7 @@ app.get('/', (req, res) => {
 });
 app.post('/', (req, res) => {
 
-    let { preferences, uid } = req.body.params;
+    let { preferences, uid } = req.body;
 
     let count = preferences.dishCountFilters.options.filter(el => el.selected)[0].value;
     let diet = preferences.dietFilters.options.filter(el => el.selected)[0].value;
