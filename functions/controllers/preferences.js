@@ -1,4 +1,4 @@
-const functions = require('firebase-functions');
+// const functions = require('firebase-functions');
 const admin = require('firebase-admin');
 const axios = require('axios');
 const express = require('express');
@@ -8,12 +8,7 @@ const configs = require('../configs.js');
 const app = express();
 app.use(cors({ origin: true }));
 
-admin.initializeApp(functions.config().firebase);
-var db = admin.firestore();
-var prefRef = db.collection("user_preferences");
-
-
-// TODO: Add middleware to authenticate requests
+// TODO: Add auth middleware to authenticate requests
 
 // Edamam Get APIs
 const spoonUrl = configs.spoonUrl;
@@ -24,6 +19,9 @@ const spoonHeader = configs.spoonConfigs;
 //Methods: Get, Post
 
 app.get('/', (req, res) => {
+
+    var db = admin.firestore();
+    var prefRef = db.collection("user_preferences");
 
     prefRef.doc(req.query.uid).get()
         .then((doc) => {
@@ -41,7 +39,7 @@ app.get('/', (req, res) => {
 });
 app.post('/', (req, res) => {
 
-    let { preferences, uid } = req.body.params;
+    let { preferences, uid } = req.body;
 
     let count = preferences.dishCountFilters.options.filter(el => el.selected)[0].value;
     let diet = preferences.dietFilters.options.filter(el => el.selected)[0].value;
@@ -74,16 +72,26 @@ app.post('/', (req, res) => {
         })
         .then(totalResults => {
             //then save the preferences to db 
+
+            var db = admin.firestore();
+            var prefRef = db.collection("user_preferences");
+
             preferences.totalResults = totalResults;
             preferences.count = count;
             prefRef.doc(uid).set(preferences)
                 .then((doc) => {
+
+                    //TODO: delete the current week's weekly suggestion, whenber new preference is saved
+
                     return res.status(200).json({ totalResults: totalResults });
-                }).catch((error) => {
+
+
+                }).catch((err) => {
                     return res.status(500).json({
                         error: err
                     })
                 });
+
         })
         .catch(err => {
             return res.status(500).json({

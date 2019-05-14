@@ -1,5 +1,12 @@
 const functions = require('firebase-functions');
-const preferences = require('./controllers/preferences.js');
+const admin = require('firebase-admin');
 
-// Expose Express APIs as a single Cloud Function:
-exports.testRecipes = functions.https.onRequest(preferences);
+admin.initializeApp(functions.config().firebase);
+
+const preferences = require('./controllers/preferences.js');
+const suggestions = require('./controllers/suggestions.js');
+
+
+// Expose Express APIs as Cloud Functions
+exports.preferences = functions.https.onRequest(preferences);
+exports.suggestions = functions.https.onRequest(suggestions);
