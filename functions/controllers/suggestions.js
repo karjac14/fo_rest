@@ -4,7 +4,7 @@ const axios = require('axios');
 const express = require('express');
 const cors = require('cors');
 const moment = require('moment');
-const configs = require('../configs.js');
+const configs = require('../configs-active.js');
 
 const app = express();
 app.use(cors({ origin: true }));
