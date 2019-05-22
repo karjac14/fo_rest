@@ -39,7 +39,7 @@ app.get('/', (req, res) => {
 });
 app.post('/', (req, res) => {
 
-    let { preferences, uid } = req.body;
+    let { preferences, uid, week, year } = req.body;
 
     let count = preferences.dishCountFilters.options.filter(el => el.selected)[0].value;
     let diet = preferences.dietFilters.options.filter(el => el.selected)[0].value;
@@ -75,16 +75,23 @@ app.post('/', (req, res) => {
 
             var db = admin.firestore();
             var prefRef = db.collection("user_preferences");
+            var suggestionsRef = db.collection("user_suggestions");
+
+            let suggestionId = `${week}-${year}-${uid}`;
 
             preferences.totalResults = totalResults;
             preferences.count = count;
             prefRef.doc(uid).set(preferences)
                 .then((doc) => {
 
-                    //TODO: delete the current week's weekly suggestion, whenber new preference is saved
-
-                    return res.status(200).json({ totalResults: totalResults });
-
+                    // delete the current week's weekly suggestion, whenver new preference is saved
+                    suggestionsRef.doc(suggestionId).delete().then(function () {
+                        console.log("dleeted");
+                        return res.status(200).json({ totalResults: totalResults });
+                    }).catch(function (error) {
+                        console.error("Error removing document: ", error);
+                        return res.status(200).json({ totalResults: totalResults });
+                    });
 
                 }).catch((err) => {
                     return res.status(500).json({
