@@ -34,9 +34,8 @@ app.get('/', (req, res) => {
         }).catch((error) => {
             return res.status(500).json(error);
         });
-
-
 });
+
 app.post('/', (req, res) => {
 
     let { preferences, uid, week, year } = req.body;
@@ -81,15 +80,13 @@ app.post('/', (req, res) => {
 
             preferences.totalResults = totalResults;
             preferences.count = count;
-            prefRef.doc(uid).set(preferences)
+            return prefRef.doc(uid).set(preferences)
                 .then((doc) => {
 
                     // delete the current week's weekly suggestion, whenver new preference is saved
                     suggestionsRef.doc(suggestionId).delete().then(function () {
-                        console.log("dleeted");
                         return res.status(200).json({ totalResults: totalResults });
                     }).catch(function (error) {
-                        console.error("Error removing document: ", error);
                         return res.status(200).json({ totalResults: totalResults });
                     });
 

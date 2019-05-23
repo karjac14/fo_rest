@@ -37,9 +37,13 @@ app.get('/', (req, res) => {
                 let data = doc.data();
                 data.meals = data.suggestions.filter(x => x.selected);
                 delete data.suggestions;
-                return res.status(200).json(data)
+                if (!data.meals.length) {
+                    return res.status(200).json({ noSelection: true, week, year })
+                } else {
+                    return res.status(200).json(data)
+                }
             } else {
-                return res.status(200).json({ noSelection: true, week, year })
+                return res.status(200).json({ noSuggestions: true, week, year })
             }
         }).catch((err) => {
             res.status(500).json({
