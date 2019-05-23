@@ -20,8 +20,6 @@ const spoonHeader = configs.spoonConfigs;
 //Methods: Get, Post
 app.get('/', (req, res) => {
 
-    console.log(req.headers);
-
 
     var db = admin.firestore();
     var prefRef = db.collection("user_preferences");
@@ -34,98 +32,90 @@ app.get('/', (req, res) => {
 
     let suggestionId = `${week}-${year}-${req.query.uid}`;
 
+    let getBreakChainError = () => {
+        let err = new Error();
+        err.name = 'BreackChainError';
+        return err;
+    };
+
+    let offset;
+    let suggestions;
+    let count;
 
 
     suggestionsRef.doc(suggestionId).get()
         .then((doc) => {
             if (doc.exists) {
                 let data = doc.data();
-                return res.status(200).json(data)
+                res.status(200).json(data)
+                throw getBreakChainError(); //terminate the chain early
+            } else {
+                return prefRef.doc(req.query.uid).get()
+            }
+        })
+        .then((doc) => {
+            if (doc.exists) {
+                let preferences = doc.data();
+
+                count = preferences.dishCountFilters.options.filter(el => el.selected)[0].value;
+                let diet = preferences.dietFilters.options.filter(el => el.selected)[0].value;
+                let filters = [];
+
+                preferences.moreFilters.options.forEach(el => {
+                    if (el.selected) {
+                        filters.push(el.value);
+                    }
+                });
+                let filtersStr = filters.toString()
+
+                var suggestionsCount = 12;
+                offset = Math.floor(Math.random() * (max[diet] - 1)) + 1;
+
+                let spoonData = {
+                    limitLicense: false,
+                    offset, //random offset number to have different suggestions every week
+                    number: suggestionsCount,
+                    type: "main course",
+                    diet: diet !== "No Diet" ? diet : "",
+                    instructionsRequired: true,
+                    addRecipeInformation: true,
+                    intolerances: filtersStr
+                };
+
+                let spoonConfig = {
+                    headers: spoonHeader,
+                    params: spoonData
+                };
+                return axios.get(spoonUrl, spoonConfig)
+            } else {
+                res.status(200).json({ noPreferences: true });
+                throw getBreakChainError(); //terminate the chain early
+            }
+        })
+        .then(response => {
+
+            if (!response.data.results.length) {
+                throw new Error('Recipe API return no results');
             }
 
-            return prefRef.doc(req.query.uid).get()
-                .then((doc) => {
-                    if (doc.exists) {
-                        let preferences = doc.data();
-
-                        let count = preferences.dishCountFilters.options.filter(el => el.selected)[0].value;
-                        let diet = preferences.dietFilters.options.filter(el => el.selected)[0].value;
-                        let filters = [];
-
-                        preferences.moreFilters.options.forEach(el => {
-                            if (el.selected) {
-                                filters.push(el.value);
-                            }
-                        });
-                        let filtersStr = filters.toString()
-
-                        var suggestionsCount = 12;
-                        var offset = Math.floor(Math.random() * (max[diet] - 1)) + 1;
-
-                        let spoonData = {
-                            limitLicense: false,
-                            offset, //random offset number to have different suggestions every week
-                            number: suggestionsCount,
-                            type: "main course",
-                            diet: diet !== "No Diet" ? diet : "",
-                            instructionsRequired: true,
-                            addRecipeInformation: true,
-                            intolerances: filtersStr
-                        };
-
-                        let spoonConfig = {
-                            headers: spoonHeader,
-                            params: spoonData
-                        };
-
-                        return axios.get(spoonUrl, spoonConfig)
-                            .then(response => {
-
-                                if (!response.data.results.length) {
-                                    return res.status(500).json({
-                                        foErrorMessage: "No results from API"
-                                    });
-                                }
-
-                                let suggestions = response.data.results.map(obj => {
-                                    var rObj = obj;
-                                    rObj.selected = false;
-                                    return rObj;
-                                });
-
-                                return suggestionsRef.doc(suggestionId).set({ suggestions: suggestions, week, year, firstDay, lastDay, offset })
-                                    .then((doc) => {
-                                        return res.status(200).json({ suggestions: suggestions, week, year, firstDay, lastDay, offset, count, newWeek: true });
-                                    }).catch((err) => {
-                                        return res.status(500).json({
-                                            error: err,
-                                            foErrorMessage: "Error saving in user_suggestions in Firebase"
-                                        });
-                                    });
-                            })
-                            .catch(err => {
-                                return res.status(500).json({
-                                    error: err,
-                                    foErrorMessage: "Error fetching recipes from API",
-                                    foErrorParams: spoonData
-                                });
-                            });
-
-                    } else {
-                        return res.status(200).json({ noPreferences: true });
-                    }
-                }).catch((err) => {
-                    return res.status(500).json({
-                        error: err,
-                        foErrorMessage: "Error fetching preferences in firebase"
-                    });
-                });
-
-        }).catch((err) => {
-            res.status(500).json({
-                error: err,
-                foErrorMessage: "Error connecting to user_suggestions in Firebase"
+            suggestions = response.data.results.map(obj => {
+                var rObj = obj;
+                rObj.selected = false;
+                return rObj;
             });
+
+            return suggestionsRef.doc(suggestionId).set({ suggestions, week, year, firstDay, lastDay, offset })
+
+        })
+        .then((doc) => {
+            return res.status(200).json({ suggestions, week, year, firstDay, lastDay, offset, count, newWeek: true });
+        }).catch((err) => {
+            if (err.name !== 'BreackChainError') {
+                res.status(500).json({
+                    error: err
+                });
+            }
+
         });
 });
 
