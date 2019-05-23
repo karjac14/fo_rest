@@ -43,7 +43,7 @@ app.get('/', (req, res) => {
                 return res.status(200).json(data)
             }
 
-            prefRef.doc(req.query.uid).get()
+            return prefRef.doc(req.query.uid).get()
                 .then((doc) => {
                     if (doc.exists) {
                         let preferences = doc.data();
@@ -78,7 +78,7 @@ app.get('/', (req, res) => {
                             params: spoonData
                         };
 
-                        axios.get(spoonUrl, spoonConfig)
+                        return axios.get(spoonUrl, spoonConfig)
                             .then(response => {
 
                                 if (!response.data.results.length) {
@@ -93,7 +93,7 @@ app.get('/', (req, res) => {
                                     return rObj;
                                 });
 
-                                suggestionsRef.doc(suggestionId).set({ suggestions: suggestions, week, year, firstDay, lastDay, offset })
+                                return suggestionsRef.doc(suggestionId).set({ suggestions: suggestions, week, year, firstDay, lastDay, offset })
                                     .then((doc) => {
                                         return res.status(200).json({ suggestions: suggestions, week, year, firstDay, lastDay, offset, count, newWeek: true });
                                     }).catch((err) => {
@@ -112,7 +112,7 @@ app.get('/', (req, res) => {
                             });
 
                     } else {
-                        return res.status(200).json({ preferences: false });
+                        return res.status(200).json({ noPreferences: true });
                     }
                 }).catch((err) => {
                     return res.status(500).json({
