@@ -90,7 +90,7 @@ app.get('/', (req, res) => {
             return recipesRef.doc(docId).set({ meals, week, year })
         })
         .then((doc) => {
-            res.status(200).json({ meals, week, year });
+            return res.status(200).json({ meals, week, year });
         }).catch((err) => {
             if (err.name !== 'BreackChainError') {
                 res.status(500).json({
