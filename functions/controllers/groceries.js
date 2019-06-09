@@ -16,7 +16,7 @@ const spoonHeader = configs.spoonConfigs;
 
 
 //THIS CONTROLLER HANDLES RECIPE SUGGESTIONS
-//Methods: Get, Post
+//Methods: Get, Patch
 app.get('/', (req, res) => {
 
     let week = req.query.week;
@@ -80,8 +80,7 @@ app.get('/', (req, res) => {
                 Array.prototype.push.apply(ingredients, meal.extendedIngredients);
             });
             ingredients.forEach((el, i) => {
-                ingredients[i].fridge = false;
-                ingredients[i].cart = false;
+                ingredients[i].cart = true;
                 ingredients[i].weekIngId = i;
             });
 
@@ -99,10 +98,24 @@ app.get('/', (req, res) => {
         });
 });
 
-app.patch('/', (req, res) => {
+app.put('/', (req, res) => {
     // TODO make this patch work
-    res.status(200).json({ success: true });
+    let { ingredients, uid, week, year } = req.body;
+
+    let docId = `${week}-${year}-${uid}`;
+    var db = admin.firestore();
+    var grocRef = db.collection("user_groceries");
+
+
+    grocRef.doc(docId).update({ ingredients })
+        .then((doc) => {
+            res.status(200).json({ success: true });
+        })
+        .catch((err) => {
+            res.status(500).json({
+                error: err
+            });
+        });
+
 });
-
-
 module.exports = app
