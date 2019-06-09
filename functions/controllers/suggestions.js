@@ -125,15 +125,25 @@ app.post('/', (req, res) => {
 
     var db = admin.firestore();
     var suggestionsRef = db.collection("user_suggestions");
+    var recipesRef = db.collection("user_recipes");
+    var grocRef = db.collection("user_groceries");
+
     let { uid } = req.body;
 
     let week = req.body.week;
     let year = req.body.year;
 
 
-    let suggestionId = `${week}-${year}-${uid}`;
+    let docId = `${week}-${year}-${uid}`;
 
-    suggestionsRef.doc(suggestionId).set(req.body)
+    suggestionsRef.doc(docId).set(req.body)
+        .then((doc) => {
+            // delete the current week's weekly meals and grecery, whenver suggestions are updated
+            return recipesRef.doc(docId).delete()
+        })
+        .then((doc) => {
+            return grocRef.doc(docId).delete()
+        })
         .then((doc) => {
             return res.status(200).json({});
         }).catch((err) => {
