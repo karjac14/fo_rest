@@ -109,7 +109,7 @@ app.put('/', (req, res) => {
 
     grocRef.doc(docId).update({ ingredients })
         .then((doc) => {
-            res.status(200).json({ success: true });
+            return res.status(200).json({ success: true });
         })
         .catch((err) => {
             res.status(500).json({
