@@ -15,13 +15,12 @@ app.get('/', (req, res) => {
     let year = req.query.year;
     let docId = `${week}-${year}-${req.query.uid}`;
     var db = admin.firestore();
-    var prefRef = db.collection("user_preferences").doc(docId);
+    var prefRef = db.collection("user_preferences").doc(req.query.uid);
     var suggestionsRef = db.collection("user_suggestions").doc(docId);
 
     Promise.all([prefRef.get(), suggestionsRef.get()])
         .then(result => {
-            console.log(result)
-            let hasPreferences, hasSuggestions;
+            let hasPreferences, hasChosen;
             if (result[0].exists) {
                 hasPreferences = true;
             }
@@ -29,11 +28,11 @@ app.get('/', (req, res) => {
                 let data = result[1].data();
                 data.suggestions.forEach(el => {
                     if (el.selected) {
-                        hasSuggestions = true;
+                        hasChosen = true;
                     }
                 });
             }
-            return res.status(200).json({ hasPreferences, hasSuggestions, week, year });
+            return res.status(200).json({ hasPreferences, hasChosen, week, year });
         })
         .catch((err) => {
             if (err.name !== 'BreackChainError') {
