@@ -45,8 +45,9 @@ app.get('/', (req, res) => {
                         hasChosen = true;
                     }
                 });
-                return res.status(200).json({ hasPreferences, hasChosen, week, year });
+
             }
+            return res.status(200).json({ hasPreferences, hasChosen, week, year });
         })
         .catch((err) => {
             if (err.name !== 'BreackChainError') {
