@@ -15,24 +15,38 @@ app.get('/', (req, res) => {
     let year = req.query.year;
     let docId = `${week}-${year}-${req.query.uid}`;
     var db = admin.firestore();
-    var prefRef = db.collection("user_preferences").doc(req.query.uid);
-    var suggestionsRef = db.collection("user_suggestions").doc(docId);
+    var prefRef = db.collection("user_preferences");
+    var suggestionsRef = db.collection("user_suggestions");
 
-    Promise.all([prefRef.get(), suggestionsRef.get()])
-        .then(result => {
-            let hasPreferences, hasChosen;
-            if (result[0].exists) {
+    let hasPreferences = false;
+    let hasChosen = false;
+
+    let getBreakChainError = () => {
+        let err = new Error();
+        err.name = 'BreackChainError';
+        return err;
+    };
+
+    prefRef.doc(req.query.uid).get()
+        .then((doc) => {
+            if (doc.exists) {
                 hasPreferences = true;
+                return suggestionsRef.doc(docId).get()
+            } else {
+                res.status(200).json({ hasPreferences: false, hasChosen: false, week, year });
+                throw getBreakChainError(); //terminate the chain early
             }
-            if (result[1].exists) {
-                let data = result[1].data();
+        })
+        .then((doc) => {
+            if (doc.exists) {
+                let data = doc.data();
                 data.suggestions.forEach(el => {
                     if (el.selected) {
                         hasChosen = true;
                     }
                 });
+                return res.status(200).json({ hasPreferences, hasChosen, week, year });
             }
-            return res.status(200).json({ hasPreferences, hasChosen, week, year });
         })
         .catch((err) => {
             if (err.name !== 'BreackChainError') {
@@ -40,6 +54,7 @@ app.get('/', (req, res) => {
                     error: err
                 });
             }
+
         });
 });
 
