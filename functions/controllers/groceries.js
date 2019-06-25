@@ -3,11 +3,13 @@ const axios = require('axios');
 const express = require('express');
 const cors = require('cors');
 const configs = require('../configs-active.js');
+const cookieParser = require('cookie-parser')();
+const validateFirebaseIdToken = require('../middleware/validate-token.js');
 
 const app = express();
 app.use(cors({ origin: true }));
-
-// TODO: Add middleware to authenticate requests
+app.use(cookieParser);
+app.use(validateFirebaseIdToken);
 
 // Spoonacular Get APIs
 const spoonUrlInfoBulk = 'https://spoonacular-recipe-food-nutrition-v1.p.rapidapi.com/recipes/informationBulk';
