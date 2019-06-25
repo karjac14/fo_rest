@@ -4,9 +4,13 @@ const axios = require('axios');
 const express = require('express');
 const cors = require('cors');
 const configs = require('../configs-active.js');
+const cookieParser = require('cookie-parser')();
+const validateFirebaseIdToken = require('../middleware/validate-token.js');
 
 const app = express();
 app.use(cors({ origin: true }));
+app.use(cookieParser);
+app.use(validateFirebaseIdToken);
 
 // TODO: Add auth middleware to authenticate requests
 

@@ -1,11 +1,13 @@
 const admin = require('firebase-admin');
 const express = require('express');
 const cors = require('cors');
+const cookieParser = require('cookie-parser')();
+const validateFirebaseIdToken = require('../middleware/validate-token.js');
 const app = express();
 
 app.use(cors({ origin: true }));
-
-// TODO: Add middleware to authenticate requests
+app.use(cookieParser);
+app.use(validateFirebaseIdToken);
 
 //THIS CONTROLLER HANDLES USER STATUS
 //Methods: Get
